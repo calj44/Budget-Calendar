@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Calendar Website</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
+	<header class="page-header">
+    <h1>BudgIT</h1>
+    <nav>
+      <ul>
+        <li><a href="#">MyBudgIT</a></li>
+      </ul>
+    </nav>
+  	</header>
+	<div class="container">
+		<div class="left-side">
+  			<div class="event">
+				<h2>Add Event</h2>
+				<input type="text" id="eventInput" placeholder="Event name">
+				<input type="date" id="eventDate">
+				<input type="number" id="eventCost" placeholder="Event cost">
+				<button id="addEvent">Add</button>
+  			</div>
+		  	<div id="events">
+				<h2>Events</h2>
+				<ul id="eventList">
+				</ul>
+	      	</div>
+		</div>
+	<div class="right-side">
+		<div class="calendar">
+			<div class="header">
+				<label for="budget">Budget: $</label>
+				<input type="number" id="budget" min="0">
+				<button id="prevMonth">Previous</button>
+				<button id="nextMonth">Next</button>
+				<h1 id="currentMonth">Month Year</h1>
+			</div>
+			<table>
+				<thead>
+					<tr class="weekdays">
+						<th>SUN</th>
+						<th>MON</th>
+						<th>TUE</th>
+						<th>WED</th>
+						<th>THU</th>
+						<th>FRI</th>
+						<th>SAT</th>
+					</tr>
+				</thead>
+				<tbody id="calendarBody" class="day">
+					<!-- Calendar Days Will Be Inserted Here -->
+				</tbody>
+			</table>
+		</div>
+	</div>
+	</div>
+<script src="script.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const currentDate = new Date();
+            let currentMonth = currentDate.getMonth();
+            let currentYear = currentDate.getFullYear();
+            const calendarBody = document.getElementById("calendarBody");
+            const currentMonthDisplay = document.getElementById("currentMonth");
+            const eventInput = document.getElementById("eventInput");
+            const eventDate = document.getElementById("eventDate");
+            const eventCostInput = document.getElementById("eventCost");
+            const eventList = document.getElementById("eventList");
+            const budgetInput = document.getElementById("budget");
+            let budget = 0;
+            let events = [];
+
+            // Update budget when user changes the input
+            budgetInput.addEventListener("change", () => {
+                budget = parseFloat(budgetInput.value) || 0;
+                updateBudgetDisplay();
+            });
+
+            document.getElementById("prevMonth").addEventListener("click", () => {
+                currentMonth--;
+                renderCalendar();
+            });
+
+            document.getElementById("nextMonth").addEventListener("click", () => {
+                currentMonth++;
+                renderCalendar();
+            });
+
+            document.getElementById("addEvent").addEventListener("click", () => {
+                const eventName = eventInput.value;
+                const eventDateValue = eventDate.value;
+                const eventCost = parseFloat(eventCostInput.value) || 0;
+
+                if (eventName && eventDateValue && !isNaN(eventCost)) {
+                    if (budget - eventCost >= 0) {
+                        // Deduct event cost from budget
+                        budget -= eventCost;
+                        updateBudgetDisplay();
+
+                        // Store the event data
+                        events.push({ name: eventName, date: eventDateValue, cost: eventCost });
+
+                        const eventItem = document.createElement("li");
+                        eventItem.innerText = `${eventName} (${eventDateValue}) - Cost: $${eventCost.toFixed(2)}`;
+                        eventList.appendChild(eventItem);
+                        eventInput.value = "";
+                        eventDate.value = "";
+                        eventCostInput.value = "";
+
+                        renderCalendar();
+                    } else {
+                        alert("Event cost exceeds budget!");
+                    }
+                } else {
+                    alert("Please provide valid event details.");
+                }
+            });
+
+            function renderCalendar() {
+                const firstDay = new Date(currentYear, currentMonth, 1);
+                const lastDay = new Date(currentYear, currentMonth + 1, 0);
+                currentMonthDisplay.innerText = `${firstDay.toLocaleString("en-US", {
+                    month: "long",
+                })} ${currentYear}`;
+
+                let day = new Date(firstDay);
+
+                calendarBody.innerHTML = "";
+
+                // Create a new row for the days of the week
+                let weekRow = document.createElement("tr");
+
+                while (day <= lastDay) {
+                    const dayCell = document.createElement("td");
+                    dayCell.innerText = day.getDate();
+                    weekRow.appendChild(dayCell);
+
+                    // Check if it's the last day of the week (Saturday)
+                    if (day.getDay() === 6) {
+                        calendarBody.appendChild(weekRow);
+                        weekRow = document.createElement("tr"); // Start a new row
+                    }
+
+                    day.setDate(day.getDate() + 1);
+                }
+
+                // Check if the last week is not complete (i.e., the last day is not Saturday)
+                if (weekRow.childElementCount > 0) {
+                    calendarBody.appendChild(weekRow);
+                }
+            }
+
+            function updateBudgetDisplay() {
+                document.getElementById("budget").value = budget.toFixed(2);
+            }
+
+            renderCalendar();
+        });
+    </script>
+</body>
+</html>
