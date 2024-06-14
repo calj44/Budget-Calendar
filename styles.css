@@ -1,0 +1,127 @@
+@charset "utf-8";
+/* CSS Document */
+body {
+    font-family: Arial, sans-serif;
+}
+
+.page-header {
+  background-color: #def2f1; /* Header background color */
+  color: #000; /* Text color */
+  padding: 5px; /* Padding for the header */
+}
+
+.page-header h1 {
+  margin-bottom: 5px; /* Bottom margin for the title */
+  font-family: Arial, sans-serif;
+  font-weight:900;
+	font-size: 40px;
+  font-style:italic;
+}
+
+.page-header nav ul {
+  list-style: none;
+  font-family: Arial, sans-serif;
+  font-weight:900;
+}
+
+.page-header nav ul li {
+  display: inline;
+  margin-right: 20px; /* Spacing between navigation items */
+}
+
+.page-header nav ul li:last-child {
+  margin-right: 0; /* Remove margin from the last navigation item */
+}
+
+.page-header nav ul li a {
+  color: #000; /* Navigation link color */
+  text-decoration: none; /* Remove default underline */
+}
+
+.page-header nav ul li a:hover {
+  text-decoration: underline; /* Underline on hover */
+}
+
+.container {
+  display: flex;
+	border: 1px solid #000;
+}
+
+.left-side {
+  flex: 0;
+  background-color: #def2f1;
+  padding: 10px;
+  border: 1px solid #000;
+}
+
+.right-side {
+  flex: 1;
+  font-family: sans-serif;
+  background-color: #def2f1;
+  border: 1px solid #000;
+}
+
+.calendar {
+	display: block;
+    width: auto;
+	margin: 0 auto;
+    text-align: right;
+	font-family: Arial, sans-serif;
+	padding: 20px;
+	background-color: #def2f1;
+}
+
+.month {
+  text-align: center;
+}
+
+.weekdays {
+  text-align: center;
+  justify-content: space-between;
+  background-color: #3aafa9;
+  border: thick;
+  border-color: #000000;
+  padding: 8px 0;
+}
+
+.day {
+  background-color: #fff;
+  width: 80px;
+}
+
+.header {
+    display: block;
+    justify-content: space-between;
+    align-items: center;
+	border: 2px solid #000;
+	text-align: center;
+}
+
+table {
+    width: 100%;
+}
+
+th, td {
+    width: 14%;
+    padding: 5px;
+    border: 1px solid #ddd;
+}
+
+.event {
+	width: 500px;
+    margin: 20px auto;
+    text-align: center;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+li {
+    margin-bottom: 10px;
+}
+
+#budget {
+    width: 60px;
+}
