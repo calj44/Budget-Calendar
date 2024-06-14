@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Calendar Website with Firebase Event Submission</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
+    <header class="page-header">
+        <h1>BudgIT</h1>
+        <nav>
+            <ul>
+                <li><a href="#">MyBudgIT</a></li>
+                <li><a href="#">Contact Us</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="right-side">
+        <div class="calendar">
+            <div class="header">
+                <label for="budget">Budget: $</label>
+                <input type="number" id="budget" min="0">
+                <button id="prevMonth">Previous</button>
+                <button id="nextMonth">Next</button>
+                <h1 id="currentMonth">Month Year</h1>
+            </div>
+            <table>
+                <thead>
+                    <tr class="weekdays">
+                        <th>SUN</th>
+                        <th>MON</th>
+                        <th>TUE</th>
+                        <th>WED</th>
+                        <th>THU</th>
+                        <th>FRI</th>
+                        <th>SAT</th>
+                    </tr>
+                </thead>
+                <tbody id="calendarBody" class="day">
+                    <!-- Calendar Days Will Be Inserted Here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Budget and Event Forms -->
+    <div id="budget-form">
+        <h2>What is your budget?</h2>
+        <input type="number" id="user-budget" placeholder="Your Budget">
+    </div>
+
+    <div id="event-form">
+        <h2>What is your event name?</h2>
+        <input type="text" id="event-name" placeholder="Event Name">
+        <h2>What is the cost of your event?</h2>
+        <input type="number" id="event-cost" placeholder="Event Cost">
+        <h2>Select the date of the event:</h2>
+        <input type="date" id="event-date" placeholder="Event Date">
+        <button id="event-button">Submit Event</button>
+    </div>
+
+    <p id="submission-status"></p>
+    <p id="user-budget-display"></p>
+    <p id="event-display"></p>
+
+    <!-- Firebase Script -->
+    <script type="module">
+        // Import the necessary Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js";
+        import { getFirestore, collection, addDoc, doc, getDoc, query, where, getDocs, orderBy, limit, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js"; // Import Firestore modules
+
+        // Your Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAsJ5wM9Fy_4u0mwaAs2eoovub5wJfKAqQ",
+            authDomain: "authentication-class-f01dc.firebaseapp.com",
+            projectId: "authentication-class-f01dc",
+            storageBucket: "authentication-class-f01dc.appspot.com",
+            messagingSenderId: "556307104029",
+            appId: "1:556307104029:web:9992a103f7e557f731a1f4",
+            measurementId: "G-2YK72L9LQC"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth();
+        const db = getFirestore(); // Get Firestore instance
+
+        // Get DOM elements
+        const userBudgetInput = document.getElementById("user-budget");
+        const eventNameInput = document.getElementById("event-name");
+        const eventCostInput = document.getElementById("event-cost");
+        const eventDateInput = document.getElementById("event-date");
+        const eventButton = document.getElementById("event-button");
+        const submissionStatus = document.getElementById("submission-status");
+        const userBudgetDisplay = document.getElementById("user-budget-display");
+        const eventDisplay = document.getElementById("event-display");
+
+        // Function to handle event submission
+        eventButton.addEventListener("click", async () => {
+            try {
+                // Get the currently authenticated user
+                const user = auth.currentUser;
+
+                if (user) {
+                    // User is signed in, get user ID
+                    const userId = user.uid;
+
+                    // Get input values
+                    const userBudgetInputValue = userBudgetInput.value.trim();
+                    const userBudget = userBudgetInputValue !== '' ? parseFloat(userBudgetInputValue) : null;
+                    const eventName = eventNameInput.value;
+                    const eventCost = parseFloat(eventCostInput.value);
+                    const eventDate = eventDateInput.value;
+
+                    // Check if the user document exists
+                    const userDocRef = doc(db, "Users", userId);
+                    const userDoc = await getDoc(userDocRef);
+
+                    if (userBudget !== null) {
+                        if (!userDoc.exists()) {
+                            // If the user document doesn't exist, create it
+                            await setDoc(userDocRef, {
+                                uid: userId,
+                                budget: userBudget
+                            });
+                        } else {
+                            // If the user document exists, update the budget
+                            await updateDoc(userDocRef, {
+                                budget: userBudget
+                            });
+                        }
+                    }
+
+                    // Retrieve the latest budget value for the user
+                    const updatedUserDoc = await getDoc(userDocRef);
+
+                    if (updatedUserDoc.exists()) {
+                        const userData = updatedUserDoc.data();
+                        userBudgetDisplay.innerHTML = `Your Latest Budget: $${userData.budget}`;
+                    } else {
+                        userBudgetDisplay.innerHTML = "No budget data found.";
+                    }
+
+                    // Generate a unique ID for the event
+                    const eventId = new Date().toISOString();
+
+                    await addDoc(collection(db, "Events"), {
+                        uid: userId,
+                        eventId: eventId,
+                        eventName: eventName,
+                        eventCost: eventCost,
+                        eventDate: eventDate
+                    });
+
+                    submissionStatus.textContent = `Event submitted: ${eventName}, Cost: $${eventCost}, Date: ${eventDate}`;
+
+                    // Retrieve events for the user and display them
+                    const eventsQuery = query(collection(db, "Events"), where("uid", "==", userId));
+                    const eventsSnapshot = await getDocs(eventsQuery);
+
+                    if (!eventsSnapshot.empty) {
+                        let eventsHTML = "<strong>Your Events:</strong><br>";
+                        eventsSnapshot.forEach((eventDoc) => {
+                            const eventData = eventDoc.data();
+                            eventsHTML += `Event Name: ${eventData.eventName}, Cost: $${eventData.eventCost}, Date: ${eventData.eventDate}<br>`;
+                        });
+                        eventDisplay.innerHTML = eventsHTML;
+                    } else {
+                        eventDisplay.innerHTML = "No events found.";
+                    }
+                } else {
+                    // No user signed in
+                    submissionStatus.textContent = "Error: No user signed in.";
+                }
+            } catch (error) {
+                submissionStatus.textContent = `Error submitting event: ${error.message}`;
+            }
+        });
+    </script>
+</body>
+</html>
