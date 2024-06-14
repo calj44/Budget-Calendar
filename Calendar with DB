@@ -73,7 +73,7 @@
 
         // Your Firebase configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyAsJ5wM9Fy_4u0mwaAs2eoovub5wJfKAqQ",
+            apiKey: "API Key Here",
             authDomain: "authentication-class-f01dc.firebaseapp.com",
             projectId: "authentication-class-f01dc",
             storageBucket: "authentication-class-f01dc.appspot.com",
